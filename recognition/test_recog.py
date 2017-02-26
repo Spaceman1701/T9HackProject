@@ -42,7 +42,7 @@ get_sucess(net, data)
 training = data[0]
 
 test_data = [(x, y) for x, y in training]
-md = test_data[0:5000]
+md = test_data[0:1000]
 
 net.train(md, 30, 10, 8)
 

@@ -24,6 +24,7 @@ class Network:
         for node in self.all_nodes():
             node.value = None
             node.error = None
+            node.bias_error = None
             node.need_update = True
             node.needs_error = True
 
@@ -108,6 +109,7 @@ class Node:
         self.bias = random.uniform(0.0, 1.0)
         self.value = None
         self.error = None
+        self.bias_error = None
         if prev:
             for node in prev:
                 e = Edge(node, self, random.uniform(0.0, 1.0))
@@ -120,7 +122,7 @@ class Node:
         for i in range(len(self.ins)):
             e = self.ins[i]
             activation += e.weight * e.origin.value
-        activation = 1.0 / (1.0 + math.exp(activation))
+        activation = 1.0 / (1.0 + math.exp(-activation))
         self.value = activation
         return activation
 
@@ -128,10 +130,12 @@ class Node:
         if self.error and not self.needs_error:
             return self.error
         self.error = 0
+        self.bias_error = 0
         if not self.outs:
             self.error = (expected - self.value)
         else:
-            self.error += sum([e.weight * e.target.calc_error(expected) for e in self.outs]) + self.bias * self.cost_derivative(expected)
+            self.error += sum([e.weight * e.target.calc_error(expected) for e in self.outs])
+            self.bias_error += self.bias * self.cost_derivative(expected)
         self.needs_error = False
         return self.error
 
@@ -142,8 +146,8 @@ class Node:
         if not self.needs_update:
             return
         for e in self.ins:
-            e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value) / sample_size
-        self.bias += (self.error * d_eval_func(self.value) * learning_rate) / sample_size
+            e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value)
+        # self.bias += (self.bias_error * d_eval_func(self.value) * learning_rate)
         for out in self.outs:
             out.target.update_weights(learning_rate, sample_size)
         self.needs_update = False
@@ -156,6 +160,8 @@ def zip_edge_value(inputs):
 
 def d_eval_func(output):
     return output * (1 - output)
+
+
 
 
 if __name__ == '__main__':
