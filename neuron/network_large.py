@@ -110,7 +110,7 @@ class Node:
         if not self.outs:
             self.error = expected - self.value
         else:
-            self.error = sum([e.weight * e.target.calc_error(expected) for e in self.outs])
+            self.error = sum([e.weight * e.target.calc_error(expected) for e in self.outs]) + self.bias
         return self.error
 
     def update_weights(self, learning_rate, sample_size):
@@ -119,6 +119,7 @@ class Node:
             assert self.error is not None
             assert e.origin.value is not None
             e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value) / sample_size
+        self.bias -= (self.calc_error(None) * d_eval_func(self.value) * learning_rate) / sample_size
         for out in self.outs:
             out.target.update_weights(learning_rate, sample_size)
 

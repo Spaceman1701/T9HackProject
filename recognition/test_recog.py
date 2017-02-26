@@ -43,7 +43,11 @@ i = 25000
 training = data[0]
 
 test_data = [(x, y) for x, y in training]
+md = [test_data[0]] * 100
+print(md[0][1])
 
-net.train(test_data, 30, 10, 3)
+net.train(md, 30, 10, 3)
 
-get_sucess(net, data)
+print(net.feed_forward(test_data[0][1]))
+
+#get_sucess(net, data)
