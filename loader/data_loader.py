@@ -30,13 +30,13 @@ def load_data_wrapper():
     test_inputs = [x.tolist() for x in te_d[0]]#Don't even know the size of this one.  784 for second index
     test_data = zip(test_inputs, te_d[1])#Figure out the pattern
     index = random.randint(0, 40000)
-    for i in range(28):
-        print('')
-        for j in range(28):
-            if training_inputs[index][i * 28 + j] == 0:
-                print('-', end='')
-            else:
-                print('@', end='')
+    #for i in range(28):
+    #    print('')
+    #    for j in range(28):
+    #        if training_inputs[index][i * 28 + j] == 0:
+    #            print('-', end='')
+    #        else:
+    #            print('@', end='')
     return training_data, validation_data, test_data
 
-load_data_wrapper()
+#load_data_wrapper()
