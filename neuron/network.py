@@ -1,5 +1,6 @@
 from neuron.layer import Layer
 
+
 class Network:
     def __init__(self, sizes):
         self.sizes = sizes
@@ -14,8 +15,15 @@ class Network:
         return output
 
     def feed_foward(self, inputs):
+        output = []
         for layer in self.layers:
             inputs = layer.evaluate(inputs)
-        return inputs
+            output.append(inputs.copy())
+        return output
 
-print(str(Network([2, 3, 2])))
+
+print(Network([2, 3, 2]))
+
+
+
+
