@@ -44,13 +44,22 @@ class Network:
 
     def back_propigate(self, inputs, outputs, learning_rate):
         self.feed_forward(inputs)
-
-        for node, value in zip(self.nodes[1], outputs):
-            node.calc_error(value)
+        assert len(self.nodes[-1]) == len(outputs)
+        for layer in reversed(self.nodes):
+            for node, value in zip(layer, outputs):
+                node.calc_error(value[0])
         for node in self.nodes[1]:
             node.update_weights(learning_rate)
 
         self.clear_network()
+
+    def train(self, training_data, epochs, batch_sides, learning_rate):
+        n = len(training_data)
+        for j in range(epochs):
+            random.shuffle(training_data)
+            batch = training_data[0: batch_sides]
+            for inputs, outputs in batch:
+                self.back_propigate(inputs, outputs, learning_rate)
 
 
 class Edge:
@@ -93,6 +102,9 @@ class Node:
 
     def update_weights(self, learning_rate):
         for e in self.ins:
+            assert self.value is not None
+            assert self.error is not None
+            assert e.origin.value is not None
             e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value)
         for out in self.outs:
             out.target.update_weights(learning_rate)
@@ -107,22 +119,15 @@ def zip_edge_value(inputs):
 def d_eval_func(output):
     return output * (1 - output)
 
-data = [([1, 1], [1, 1]), ([1, 1], [1, 1]), ([1, 1], [1, 1]), ([1, 1], [1, 1])]
 
-n = Network([2, 2, 2])
-print(n)
+if __name__ == '__main__':
+    in_data = [[1, 1, 1]] * 1000
+    out_data = [[[1], [0.4], [1]]] * 1000
+    data = []
+    for v_i, v_o in zip(in_data, out_data):
+        data.append((v_i, v_o))
 
-print()
-
-print(n.feed_forward([1, 1]))
-i = 1000000
-while i > 0:
-    train = data[0]
-    n.back_propigate(train[0], train[1], 0.9)
-    if i % 1000 == 0:
-        print(i)
-    i -= 1
-
-print(n)
-print()
-print(n.feed_forward([1, 1]))
+    n = Network([3, 2, 3])
+    print(n.feed_forward([1, 1, 1]))
+    n.train(data, 100, 200, 0.9)
+    print(n.feed_forward([1, 1, 1]))
