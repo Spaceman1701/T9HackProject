@@ -24,6 +24,7 @@ class Network:
         for node in self.all_nodes():
             node.value = None
             node.error = None
+            node.need_update = True
 
     def __str__(self):
         output = "Network"
@@ -45,9 +46,8 @@ class Network:
     def back_propigate(self, inputs, outputs, learning_rate):
         self.feed_forward(inputs)
         assert len(self.nodes[-1]) == len(outputs)
-        for layer in reversed(self.nodes):
-            for node, value in zip(layer, outputs):
-                node.calc_error(value[0])
+        for node, value in zip(self.nodes[-1], outputs):
+                node.calc_error_new(value[0])
         for node in self.nodes[1]:
             node.update_weights(learning_rate, 1)
 
@@ -72,7 +72,7 @@ class Network:
             batches = [training_data[k:k + batch_sides] for k in range(0, n, batch_sides)]
             for batch in batches:
                 self.back_propigate_batch(batch, learning_rate, batch_sides)
-            print("Epoch \{0} finished.", j)
+            print("Epoch {0} finished.".format(j))
 
 
 class Edge:
@@ -84,14 +84,10 @@ class Edge:
     def __str__(self):
         return str(self.weight)
 
-class BiasEdge(Edge):
-    def __str__(self):
-        self.origin =
-
-class BiasNode(Node):
 
 class Node:
     def __init__(self, prev):
+        self.needs_update = True
         self.outs = []
         self.ins = []
         self.bias = random.uniform(0.0, 1.0)
@@ -115,20 +111,22 @@ class Node:
         if not self.outs:
             self.error = expected - self.value
         else:
-            z = sum([e.weight * e.target.value for e in self.ins]) + self.bias
-            delta = (expected - self.value) * d_eval_func(z)
-            self.error = sum([e.weight * e.target.calc_error(expected) for e in self.outs]) + self.bias
+            self.error = sum([e.weight * e.target.calc_error(expected) for e in self.outs]) + \
+                         self.bias * self.cost_derivative(expected)
         return self.error
 
+    def cost_derivative(self, expected):
+        return expected - self.value
+
     def update_weights(self, learning_rate, sample_size):
+        if not self.needs_update:
+            return
         for e in self.ins:
-            assert self.value is not None
-            assert self.error is not None
-            assert e.origin.value is not None
             e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value) / sample_size
-        self.bias -= (self.calc_error(None) * d_eval_func(self.value) * learning_rate) / sample_size
+        self.bias -= (self.error * d_eval_func(self.value) * learning_rate) / sample_size
         for out in self.outs:
             out.target.update_weights(learning_rate, sample_size)
+        self.needs_update = False
 
 
 def zip_edge_value(inputs):
