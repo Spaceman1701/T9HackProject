@@ -100,7 +100,7 @@ class Node:
                 self.ins.append(e)
 
     def eval(self):
-        activation = sum([weight * input_value for weight, input_value in zip_edge_value(self.ins)]) + self.bias
+        activation = sum([weight * input_value for weight, input_value in zip_edge_value(self.ins)])# + self.bias
         activation = 1.0 / (1.0 + math.exp(-activation))
         self.value = activation
         return activation
@@ -111,19 +111,18 @@ class Node:
         if not self.outs:
             self.error = expected - self.value
         else:
-            self.error = sum([e.weight * e.target.calc_error(expected) for e in self.outs]) + \
-                         self.bias * self.cost_derivative(expected)
+            self.error = sum([e.weight * e.target.calc_error(expected) for e in self.outs])
         return self.error
 
     def cost_derivative(self, expected):
         return expected - self.value
 
     def update_weights(self, learning_rate, sample_size):
-        if not self.needs_update:
-            return
+       # if not self.needs_update:
+       #     return
         for e in self.ins:
             e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value) / sample_size
-        self.bias -= (self.error * d_eval_func(self.value) * learning_rate) / sample_size
+        #  self.bias += (self.error * d_eval_func(self.value) * learning_rate) / sample_size
         for out in self.outs:
             out.target.update_weights(learning_rate, sample_size)
         self.needs_update = False
