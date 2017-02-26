@@ -7,7 +7,7 @@ from neuron.network_large import Network
 def get_value(output):
     max_index = 0
     for i in range(len(output)):
-        if output[i] > output[max_index]:
+        if output[i] < output[max_index]:
             max_index = i
         if output[i] > 1.0:
             print("bad mapping: ", output[i])
@@ -42,11 +42,10 @@ get_sucess(net, data)
 training = data[0]
 
 test_data = [(x, y) for x, y in training]
-md = [test_data[0]] * 100
-print(md[0][1])
+md = test_data[0:1000]
 
 net.train(md, 30, 10, 8)
 
 print(net.feed_forward(test_data[0][1]))
 
-get_sucess(net, md[0])
+get_sucess(net, data)
