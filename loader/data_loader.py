@@ -9,7 +9,7 @@ def vectorize(i):
     # Returns a 10-dim vector with 1.0 in the ith location. Converts digit into desired output
     vector = np.zeros((10, 1))
     vector[i] = 1.0
-    return vector
+    return vector.tolist()
 
 
 def load_data():
