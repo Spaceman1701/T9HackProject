@@ -131,7 +131,7 @@ class Node:
         if not self.outs:
             self.error = (expected - self.value)
         else:
-            self.error += sum([e.weight * e.target.calc_error(expected) for e in self.outs])
+            self.error += sum([e.weight * e.target.calc_error(expected) for e in self.outs]) + self.bias * self.cost_derivative(expected)
         self.needs_error = False
         return self.error
 
@@ -139,11 +139,11 @@ class Node:
         return expected - self.value
 
     def update_weights(self, learning_rate, sample_size):
-        #if not self.needs_update:
-        #    return
+        if not self.needs_update:
+            return
         for e in self.ins:
-            e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value) / (2*sample_size)
-        #  self.bias = (self.error * d_eval_func(self.value) * learning_rate) / sample_size
+            e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value) / sample_size
+        self.bias += (self.error * d_eval_func(self.value) * learning_rate) / sample_size
         for out in self.outs:
             out.target.update_weights(learning_rate, sample_size)
         self.needs_update = False
@@ -159,15 +159,15 @@ def d_eval_func(output):
 
 
 if __name__ == '__main__':
-    in_data = [[1, 0.5] * 100] * 10000
-    out_data = [[[0.2], [0.4], [0.6]]] * 10000
+    in_data = [[1, 0.5] * 100] * 1000
+    out_data = [[[0.2], [0.4], [0.6]]] * 1000
     data = []
     for v_i, v_o in zip(in_data, out_data):
         data.append((v_i, v_o))
 
     n = Network([200, 15, 3])
-    print(n.feed_forward([1, 2] * 100))
-    n.train(data, 20, 10, 0.9)
+    print(n.feed_forward([1, 0.5] * 100))
+    n.train(data, 35, 20, 9)
     res = n.feed_forward([1, 0.5] * 100)
     print(res)
     if any([x > 1.1 for x in res]):
