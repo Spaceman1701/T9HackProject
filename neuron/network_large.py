@@ -84,6 +84,11 @@ class Edge:
     def __str__(self):
         return str(self.weight)
 
+class BiasEdge(Edge):
+    def __str__(self):
+        self.origin =
+
+class BiasNode(Node):
 
 class Node:
     def __init__(self, prev):
@@ -110,6 +115,8 @@ class Node:
         if not self.outs:
             self.error = expected - self.value
         else:
+            z = sum([e.weight * e.target.value for e in self.ins]) + self.bias
+            delta = (expected - self.value) * d_eval_func(z)
             self.error = sum([e.weight * e.target.calc_error(expected) for e in self.outs]) + self.bias
         return self.error
 
