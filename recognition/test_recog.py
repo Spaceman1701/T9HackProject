@@ -30,20 +30,15 @@ def get_sucess(net, data):
 
 data = load_data_wrapper()
 
-net = Network([784, 20, 10])
+net = Network([784, 12, 10])
 
 get_sucess(net, data)
 
 i = 25000
 training = data[0]
-for test_in, test_out in training:
-    # print(test_in)
-    # print(test_out)
-    net.back_propigate(test_in, test_out, 0.9)
-    i -= 1
-    if i % 200 == 0:
-        print(i)
-    if i <= 0:
-        break
+
+test_data = [(x, y) for x, y in training]
+
+net.train(test_data, 10, 500, 3)
 
 get_sucess(net, data)

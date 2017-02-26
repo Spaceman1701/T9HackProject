@@ -60,6 +60,7 @@ class Network:
             batch = training_data[0: batch_sides]
             for inputs, outputs in batch:
                 self.back_propigate(inputs, outputs, learning_rate)
+            print("Epoch {0} finished.", j)
 
 
 class Edge:
@@ -122,12 +123,12 @@ def d_eval_func(output):
 
 if __name__ == '__main__':
     in_data = [[1, 1, 1]] * 1000
-    out_data = [[[1], [0.4], [1]]] * 1000
+    out_data = [[[0.4]]] * 1000
     data = []
     for v_i, v_o in zip(in_data, out_data):
         data.append((v_i, v_o))
 
-    n = Network([3, 2, 3])
+    n = Network([3, 2, 1])
     print(n.feed_forward([1, 1, 1]))
     n.train(data, 100, 200, 0.9)
     print(n.feed_forward([1, 1, 1]))
