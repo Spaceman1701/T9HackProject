@@ -49,7 +49,19 @@ class Network:
             for node, value in zip(layer, outputs):
                 node.calc_error(value[0])
         for node in self.nodes[1]:
-            node.update_weights(learning_rate)
+            node.update_weights(learning_rate, 1)
+
+        self.clear_network()
+
+    def back_propigate_batch(self, batch, learning_rate, sample_size=1):
+        for inputs, outputs in batch:
+            self.feed_forward(inputs)
+            assert len(self.nodes[-1]) == len(outputs)
+            for layer in reversed(self.nodes):
+                for node, value in zip(layer, outputs):
+                    node.calc_error(value[0])
+        for node in self.nodes[1]:
+            node.update_weights(learning_rate, sample_size)
 
         self.clear_network()
 
@@ -57,10 +69,10 @@ class Network:
         n = len(training_data)
         for j in range(epochs):
             random.shuffle(training_data)
-            batch = training_data[0: batch_sides]
-            for inputs, outputs in batch:
-                self.back_propigate(inputs, outputs, learning_rate)
-            print("Epoch {0} finished.", j)
+            batches = [training_data[k:k + batch_sides] for k in range(0, n, batch_sides)]
+            for batch in batches:
+                self.back_propigate_batch(batch, learning_rate, batch_sides)
+            print("Epoch \{0} finished.", j)
 
 
 class Edge:
@@ -101,15 +113,14 @@ class Node:
             self.error = sum([e.weight * e.target.calc_error(expected) for e in self.outs])
         return self.error
 
-    def update_weights(self, learning_rate):
+    def update_weights(self, learning_rate, sample_size):
         for e in self.ins:
             assert self.value is not None
             assert self.error is not None
             assert e.origin.value is not None
-            e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value)
+            e.weight += (learning_rate * d_eval_func(self.value) * self.error * e.origin.value) / sample_size
         for out in self.outs:
-            out.target.update_weights(learning_rate)
-
+            out.target.update_weights(learning_rate, sample_size)
 
 
 def zip_edge_value(inputs):
@@ -122,13 +133,16 @@ def d_eval_func(output):
 
 
 if __name__ == '__main__':
-    in_data = [[1, 1, 1]] * 1000
-    out_data = [[[0.4]]] * 1000
+    in_data = [[1, 2] * 100] * 1000
+    out_data = [[[0.2], [0.4], [0.6]]] * 1000
     data = []
     for v_i, v_o in zip(in_data, out_data):
         data.append((v_i, v_o))
 
-    n = Network([3, 2, 1])
-    print(n.feed_forward([1, 1, 1]))
-    n.train(data, 100, 200, 0.9)
-    print(n.feed_forward([1, 1, 1]))
+    n = Network([200, 15, 3])
+    print(n.feed_forward([1, 2] * 100))
+    n.train(data, 50, 10, 0.9)
+    res = n.feed_forward([1, 2] * 100)
+    print(res)
+    if any([x > 1.1 for x in res]):
+        print("bad mapping")
